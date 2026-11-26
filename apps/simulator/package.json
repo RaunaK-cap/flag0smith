@@ -1,0 +1,7 @@
+{
+  "name": "@flagpilot/simulator",
+  "private": true,
+  "type": "module",
+  "main": "src/traffic.ts",
+  "dependencies": { "@flagsmith/nodejs": "^9.5.0" }
+}

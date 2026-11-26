@@ -1,0 +1,14 @@
+{
+  "name": "flagpilot",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev:agent": "bun --watch apps/agent/src/index.ts",
+    "simulate": "bun apps/simulator/src/index.ts",
+    "typecheck": "tsc --noEmit -p apps/agent && tsc --noEmit -p apps/simulator"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.9.0"
+  }
+}
