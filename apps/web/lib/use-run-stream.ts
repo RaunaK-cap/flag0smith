@@ -33,5 +33,5 @@ export function useRunStream(runId: string) {
   }, [runId]);
 
   const view = useMemo(() => buildRunView(events), [events]);
-  return { view, state, eventCount: events.length };
+  return { view, state, events };
 }

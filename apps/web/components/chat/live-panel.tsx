@@ -7,7 +7,7 @@ import { clock, percent } from "@/lib/format";
 import type { RunView } from "@/lib/run-view";
 import { TrafficChart, orderVariants, variantColor } from "./traffic-chart";
 
-export function ExperimentPanel({ view }: { view: RunView }) {
+export function LivePanel({ view }: { view: RunView }) {
   const variants = orderVariants(Object.keys(view.traffic));
 
   return (

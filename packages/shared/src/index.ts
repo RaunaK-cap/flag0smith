@@ -25,6 +25,7 @@ export type RunEvent =
   | { type: "run.started"; question: string; mode: "demo" | "connected" }
   | { type: "run.status"; status: RunStatus }
   | { type: "run.finished"; status: RunStatus; summary?: string; error?: string }
+  | { type: "user.message"; text: string } // a follow-up message in the same chat
 
   // agents
   | { type: "agent.started"; agent: AgentName; parent?: AgentName; task?: string }

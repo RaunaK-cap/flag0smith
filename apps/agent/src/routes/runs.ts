@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { config } from "../config";
-import { executeRun } from "../runs/execute";
+import { continueRun, executeRun } from "../runs/execute";
 import type { RunTarget } from "../runs/context";
 import { createRun, emit, getEvents, getRun, listRuns, subscribe } from "../runs/store";
 import { resolveApproval } from "../runs/approvals";
@@ -19,7 +19,7 @@ runsRouter.post("/runs", (req, res) => {
   const target: RunTarget = mode === "demo" ? config.demo : readConnectedTarget(req.body?.target);
   if (!target.flagsmithToken) return res.status(400).json({ error: "Flagsmith token is missing" });
 
-  const runId = createRun(question);
+  const runId = createRun(question, mode);
   emit(runId, { type: "run.started", question, mode });
   executeRun(runId, question, mode, target); // runs in the background, events go to the stream
 
@@ -55,6 +55,15 @@ runsRouter.get("/runs/:id/stream", (req, res) => {
   for (const event of getEvents(run.id, after)) sse.send(event, event.seq);
   const unsubscribe = subscribe(run.id, (event) => sse.send(event, event.seq));
   sse.onClose(unsubscribe);
+});
+
+// A follow-up message in the same chat.
+runsRouter.post("/runs/:id/messages", (req, res) => {
+  const text = String(req.body?.text ?? "").trim();
+  if (!text) return res.status(400).json({ error: "text is required" });
+  const error = continueRun(req.params.id, text);
+  if (error) return res.status(409).json({ error });
+  res.status(202).json({ ok: true });
 });
 
 runsRouter.post("/runs/:id/approvals/:approvalId", (req, res) => {

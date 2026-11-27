@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { RunScreen } from "@/components/run/run-screen";
+import { ChatScreen } from "@/components/chat/chat-screen";
 
 // Next.js 16: reading params is dynamic, so it happens inside Suspense.
 export default function RunPage({ params }: PageProps<"/runs/[id]">) {
@@ -12,5 +12,5 @@ export default function RunPage({ params }: PageProps<"/runs/[id]">) {
 
 async function RunLoader({ params }: { params: PageProps<"/runs/[id]">["params"] }) {
   const { id } = await params;
-  return <RunScreen id={id} />;
+  return <ChatScreen id={id} />;
 }

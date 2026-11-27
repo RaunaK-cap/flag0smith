@@ -20,26 +20,36 @@ db.run(`CREATE TABLE IF NOT EXISTS events (
   PRIMARY KEY (run_id, seq)
 )`);
 
+// Columns added after the first version. ALTER fails if the column already exists, which is fine.
+for (const column of ["mode TEXT", "history TEXT"]) {
+  try {
+    db.run(`ALTER TABLE runs ADD COLUMN ${column}`);
+  } catch {}
+}
+
 type Listener = (event: StoredEvent) => void;
 
 // In-memory state for runs that are active in this process.
 const listeners = new Map<string, Set<Listener>>();
 const nextSeq = new Map<string, number>();
 
-export function createRun(question: string): string {
+export function createRun(question: string, mode: "demo" | "connected" = "demo"): string {
   const id = crypto.randomUUID();
-  db.run("INSERT INTO runs (id, question, status, created_at) VALUES (?, ?, ?, ?)", [
+  db.run("INSERT INTO runs (id, question, status, created_at, mode) VALUES (?, ?, ?, ?, ?)", [
     id,
     question,
     "running",
     Date.now(),
+    mode,
   ]);
   nextSeq.set(id, 1);
   return id;
 }
 
 export function emit(runId: string, event: RunEvent) {
-  const seq = nextSeq.get(runId) ?? 1;
+  // After a restart the counter is gone, so continue from the last saved event.
+  if (!nextSeq.has(runId)) nextSeq.set(runId, lastSeq(runId) + 1);
+  const seq = nextSeq.get(runId)!;
   nextSeq.set(runId, seq + 1);
 
   const stored: StoredEvent = { ...event, seq, at: Date.now() };
@@ -59,10 +69,25 @@ export function getEvents(runId: string, afterSeq = 0): StoredEvent[] {
   return rows.map((row) => JSON.parse(row.data));
 }
 
+function lastSeq(runId: string): number {
+  const row = db.query("SELECT MAX(seq) AS seq FROM events WHERE run_id = ?").get(runId) as { seq: number | null };
+  return row.seq ?? 0;
+}
+
 export function getRun(runId: string) {
-  return db.query("SELECT id, question, status, created_at FROM runs WHERE id = ?").get(runId) as
-    | { id: string; question: string; status: RunStatus; created_at: number }
+  return db.query("SELECT id, question, status, created_at, mode FROM runs WHERE id = ?").get(runId) as
+    | { id: string; question: string; status: RunStatus; created_at: number; mode: "demo" | "connected" | null }
     | null;
+}
+
+// The agent's conversation so far (SDK "history" items), so a chat can be continued later.
+export function saveHistory(runId: string, history: unknown[]) {
+  db.run("UPDATE runs SET history = ? WHERE id = ?", [JSON.stringify(history), runId]);
+}
+
+export function loadHistory(runId: string): unknown[] {
+  const row = db.query("SELECT history FROM runs WHERE id = ?").get(runId) as { history: string | null } | null;
+  return row?.history ? JSON.parse(row.history) : [];
 }
 
 export function listRuns(limit = 50) {

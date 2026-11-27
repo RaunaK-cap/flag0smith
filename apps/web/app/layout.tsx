@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -20,13 +20,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col text-[13px] leading-relaxed">
+      <body className="h-full text-[13px] leading-relaxed">
         <ThemeProvider>
-          {/* The header reads the URL, which is dynamic in Next.js 16, so it streams in. */}
-          <Suspense fallback={<div className="h-12 border-b" />}>
-            <AppHeader />
+          {/* The sidebar reads the URL, which is dynamic in Next.js 16, so it streams in. */}
+          <Suspense fallback={<div className="h-dvh" />}>
+            <AppShell>{children}</AppShell>
           </Suspense>
-          <main className="flex flex-1 flex-col">{children}</main>
           <Toaster position="bottom-right" />
         </ThemeProvider>
       </body>

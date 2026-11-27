@@ -1,25 +1,52 @@
 // Runs the orchestrator agent for one run and turns everything the SDK does
 // into RunEvents for the dashboard. Also handles pausing for human approval.
 
-import { run, type RunStreamEvent, type StreamedRunResult } from "@openai/agents";
+import { run, type AgentInputItem, type RunStreamEvent, type StreamedRunResult } from "@openai/agents";
 import type { AgentName, RunEvent } from "@flagpilot/shared";
+import { config } from "../config";
 import { buildAgents } from "../agents";
 import { waitForApproval } from "./approvals";
 import { createRunContext, type RunContext, type RunTarget } from "./context";
-import { emit as storeEmit } from "./store";
+import { emit as storeEmit, getRun, loadHistory, saveHistory } from "./store";
 
 const MAX_TURNS = 40;
 
+// Keys for "connect your own" runs live only in memory, never in the database.
+// Demo runs can always rebuild their target from the server config.
+const connectedTargets = new Map<string, RunTarget>();
+
+// First message of a chat.
 export async function executeRun(runId: string, question: string, mode: "demo" | "connected", target: RunTarget) {
+  if (mode === "connected") connectedTargets.set(runId, target);
+  // Tell the agent which mode it is in: fake traffic is only allowed in demo mode.
+  await executeTurn(runId, `Mode: ${mode}\n\nRequest: ${question}`, target);
+}
+
+// A follow-up message in an existing chat. Returns an error message, or null when started.
+export function continueRun(runId: string, text: string): string | null {
+  const saved = getRun(runId);
+  if (!saved) return "run not found";
+  if (saved.status === "running" || saved.status === "waiting_approval") return "the agent is still working";
+
+  const target = saved.mode === "connected" ? connectedTargets.get(runId) : config.demo;
+  if (!target) return "this chat used your own keys and the server restarted - start a new chat";
+
+  storeEmit(runId, { type: "user.message", text });
+  storeEmit(runId, { type: "run.status", status: "running" });
+  executeTurn(runId, text, target); // runs in the background
+  return null;
+}
+
+// One turn of the conversation: the saved history + the new message.
+async function executeTurn(runId: string, text: string, target: RunTarget) {
   const emit = (event: RunEvent) => storeEmit(runId, event);
   const context = createRunContext(runId, target, emit);
   const { orchestrator } = buildAgents((agent, event) => forwardEvent(agent, event, emit));
+  const input = [...(loadHistory(runId) as AgentInputItem[]), { role: "user", content: text } as AgentInputItem];
 
-  emit({ type: "agent.started", agent: "orchestrator", task: question });
+  emit({ type: "agent.started", agent: "orchestrator", task: text });
 
   try {
-    // Tell the agent which mode it is in: fake traffic is only allowed in demo mode.
-    const input = `Mode: ${mode}\n\nRequest: ${question}`;
     let result = await run(orchestrator, input, { stream: true, context, maxTurns: MAX_TURNS });
     await consume(result, "orchestrator", emit);
 
@@ -49,6 +76,7 @@ export async function executeRun(runId: string, question: string, mode: "demo" |
       await consume(result, "orchestrator", emit);
     }
 
+    saveHistory(runId, result.history);
     const summary = typeof result.finalOutput === "string" ? result.finalOutput : undefined;
     emit({ type: "agent.finished", agent: "orchestrator", output: summary });
     emit({ type: "run.finished", status: "done", summary });

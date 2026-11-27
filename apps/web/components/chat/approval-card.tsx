@@ -27,7 +27,7 @@ export function ApprovalCard({ runId, approval }: { runId: string; approval: App
   }
 
   return (
-    <div className="relative border border-warn/50 bg-card p-4 shadow-[0_18px_40px_-24px_rgb(0_0_0/0.4)]">
+    <div className="relative ml-9 max-w-xl border border-warn/50 bg-card p-4 shadow-[0_18px_40px_-24px_rgb(0_0_0/0.4)]">
       <CornerMarks />
       <div className="mb-2 flex items-center gap-2">
         <ShieldAlert className="size-4 text-warn" />
