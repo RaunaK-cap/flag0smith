@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { DotMatrix } from "@/components/dot-matrix";
+import { DotField } from "@/components/dot-field";
 import { ChatInput } from "@/components/chat/chat-input";
-import { Eyebrow, Title } from "@/components/frame";
+import type { PlaceholderLine } from "@/components/chat/rotating-placeholder";
+import { Title } from "@/components/frame";
 import { startRun } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -14,7 +15,14 @@ const suggestions = [
   "Roll out new_signup_form to 10% of users.",
 ];
 
-const loop = ["Plan", "Flag", "Pull request", "Experiment", "Results", "Rollout"];
+// The input's placeholder cycles through these.
+const placeholders: PlaceholderLine[] = [
+  [{ text: "Ask a product question, e.g. will a shorter signup form get more signups?" }],
+  [
+    { text: "Plan → Flag → Pull request → Experiment → Results → Rollout" },
+    { text: "· you approve every change", className: "text-warn" },
+  ],
+];
 
 export default function NewChatPage() {
   const router = useRouter();
@@ -26,28 +34,13 @@ export default function NewChatPage() {
 
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 py-12">
-      <DotMatrix
-        cols={70}
-        rows={18}
-        seed={3}
-        animated
-        className="pointer-events-none absolute inset-x-0 bottom-0 w-full text-muted-foreground/25"
-      />
+      {/* Full-page dots, faded out behind the prompt so the text stays readable. */}
+      <DotField className="pointer-events-none absolute inset-0 h-full w-full text-muted-foreground/25 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_45%,transparent_30%,black_100%)]" />
 
       <div className="relative w-full max-w-2xl">
-        <Eyebrow className="mb-4">New chat</Eyebrow>
-        <Title lead="What do you want to test?" rest="FlagPilot runs it end to end." />
-        <ol className="mt-4 mb-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
-          {loop.map((step, index) => (
-            <li key={step} className="flex items-center gap-2">
-              {index > 0 && <span>→</span>}
-              {step}
-            </li>
-          ))}
-          <li className="ml-1 text-warn">· you approve every change</li>
-        </ol>
+        <Title lead="What do you want to test?" rest="FlagPilot runs it end to end." className="mb-8" />
 
-        <ChatInput placeholder="Ask a product question, e.g. will a shorter signup form get more signups?" onSend={start} />
+        <ChatInput placeholder={placeholders} onSend={start} />
 
         <div className="mt-3 flex flex-wrap gap-2">
           {suggestions.map((text) => (

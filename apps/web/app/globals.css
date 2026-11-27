@@ -174,3 +174,15 @@
 @media (prefers-reduced-motion: reduce) {
   [class*="anim-"] { animation: none !important; }
 }
+
+/* Placeholder letters (components/chat/rotating-placeholder.tsx). */
+@keyframes letter-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes letter-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-3px); }
+}
+.anim-letter-in { animation: letter-in 450ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-letter-out { animation: letter-out 450ms cubic-bezier(0.64, 0, 0.78, 0) both; }
