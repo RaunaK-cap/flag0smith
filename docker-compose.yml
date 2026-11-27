@@ -1,0 +1,85 @@
+# Track 03: run Flagsmith yourself + FlagPilot with one command.
+#
+#   docker compose up
+#
+# Then open http://localhost:8000, create an account, a project and an Admin API key,
+# choose "Flagsmith database" under Environment Settings > Warehouse,
+# put the keys in .env (see .env.example, FLAGSMITH_API_URL=http://flagsmith:8000/api/v1)
+# and start the agent: docker compose --profile agent up -d
+#
+# Based on Flagsmith's official docker-compose.yml, with Experimentation turned on.
+
+x-flagsmith-env: &flagsmith-env
+  DATABASE_URL: postgresql://postgres:password@postgres:5432/flagsmith
+  USE_POSTGRES_FOR_ANALYTICS: "true"
+  ENVIRONMENT: production
+  DJANGO_ALLOWED_HOSTS: "*"
+  FLAGSMITH_DOMAIN: localhost:8000
+  DJANGO_SECRET_KEY: change-me-local-only
+  WAREHOUSE_CREDENTIALS_SECRET: change-me-local-only
+  TASK_RUN_METHOD: TASK_PROCESSOR
+  EXPERIMENTATION_ENABLED: "true"
+
+volumes:
+  pgdata:
+  flagpilot-data:
+
+services:
+  postgres:
+    image: postgres:15.5-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: flagsmith
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d flagsmith -U postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+      start_period: 20s
+
+  migrate-db:
+    image: docker.flagsmith.com/flagsmith/flagsmith:latest
+    command: [migrate]
+    environment: *flagsmith-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  flagsmith:
+    image: docker.flagsmith.com/flagsmith/flagsmith:latest
+    restart: unless-stopped
+    command: [serve]
+    environment: *flagsmith-env
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate-db:
+        condition: service_completed_successfully
+
+  flagsmith-task-processor:
+    image: docker.flagsmith.com/flagsmith/flagsmith:latest
+    restart: unless-stopped
+    command: [run-task-processor]
+    environment: *flagsmith-env
+    depends_on:
+      migrate-db:
+        condition: service_completed_successfully
+
+  # FlagPilot agent backend (API + live SSE stream) on http://localhost:4000
+  agent:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      FLAGSMITH_API_URL: http://flagsmith:8000/api/v1
+      DATA_DIR: /data
+    volumes:
+      - flagpilot-data:/data
+    ports:
+      - "4000:4000"
+    depends_on:
+      - flagsmith
+    profiles: [agent] # start with: docker compose --profile agent up

@@ -5,7 +5,8 @@
 import { Database } from "bun:sqlite";
 import type { RunEvent, RunStatus, StoredEvent } from "@flagpilot/shared";
 
-const db = new Database("flagpilot.sqlite", { create: true });
+// DATA_DIR lets Docker/Railway keep the file on a persistent volume.
+const db = new Database(`${process.env.DATA_DIR ?? "."}/flagpilot.sqlite`, { create: true });
 db.run(`CREATE TABLE IF NOT EXISTS runs (
   id TEXT PRIMARY KEY,
   question TEXT NOT NULL,
