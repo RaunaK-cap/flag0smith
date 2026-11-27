@@ -5,6 +5,7 @@ import type { RunTarget } from "../runs/context";
 import { createRun, emit, getEvents, getRun, listRuns, subscribe } from "../runs/store";
 import { resolveApproval } from "../runs/approvals";
 import { openSse } from "./sse";
+import { startSampleRun } from "../dev/sample-run";
 
 export const runsRouter = Router();
 
@@ -24,6 +25,13 @@ runsRouter.post("/runs", (req, res) => {
 
   res.status(201).json({ runId });
 });
+
+// DEV ONLY: a scripted run for building the dashboard without API keys.
+if (process.env.ENABLE_SAMPLE_RUN === "1") {
+  runsRouter.post("/dev/sample-run", (_req, res) => {
+    res.status(201).json({ runId: startSampleRun() });
+  });
+}
 
 runsRouter.get("/runs", (_req, res) => {
   res.json(listRuns());
