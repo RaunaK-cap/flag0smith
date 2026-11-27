@@ -1,4 +1,10 @@
-// A field of dots whose size follows a soft wave. Pure SVG. Same as the landing page.
+"use client";
+
+import { useEffect, useState } from "react";
+
+// A field of dots whose size follows a soft wave. Pure SVG.
+// Drawn only in the browser: Math.sin() gives slightly different decimals on the server and in the
+// browser, which made React's hydration complain. It's decoration, so skipping it on the server is fine.
 
 export function DotMatrix({
   cols = 32,
@@ -13,21 +19,24 @@ export function DotMatrix({
   animated?: boolean;
   className?: string;
 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const gap = 8;
   const dots = [];
 
-  for (let y = 0; y < rows; y++) {
+  for (let y = 0; mounted && y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       const wave = Math.sin((x + seed * 3) / 4) * Math.cos((y - seed) / 3);
-      const noise = Math.sin(x * 12.9898 + y * 78.233 + seed) * 43758.5453;
-      const strength = ((wave + 1) / 2) * 0.8 + (noise - Math.floor(noise)) * 0.2;
+      const noise = (Math.imul(x + 1, 73856093) ^ Math.imul(y + 1, 19349663) ^ Math.imul(seed, 83492791)) >>> 0;
+      const strength = round(((wave + 1) / 2) * 0.8 + ((noise % 1000) / 1000) * 0.2);
       if (strength < 0.35) continue;
       dots.push(
         <circle
           key={`${x}-${y}`}
           cx={x * gap + 4}
           cy={y * gap + 4}
-          r={strength * 1.7}
+          r={round(strength * 1.7)}
           fill="currentColor"
           opacity={strength}
           className={animated ? "anim-twinkle" : undefined}
@@ -42,4 +51,8 @@ export function DotMatrix({
       {dots}
     </svg>
   );
+}
+
+function round(value: number) {
+  return Math.round(value * 1000) / 1000;
 }
