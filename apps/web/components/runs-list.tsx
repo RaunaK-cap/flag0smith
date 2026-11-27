@@ -42,7 +42,7 @@ export function RunsList({ activeId, limit, compact }: { activeId?: string; limi
 
   if (error) {
     return (
-      <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+      <p className="hatch border p-3 text-[11px] text-muted-foreground">
         Can&apos;t reach the agent backend. Is it running on port 4000?
       </p>
     );
@@ -59,24 +59,24 @@ export function RunsList({ activeId, limit, compact }: { activeId?: string; limi
   }
 
   if (runs.length === 0) {
-    return <p className="text-xs text-muted-foreground">No runs yet. Ask something to start one.</p>;
+    return <p className="hatch border p-3 text-[11px] text-muted-foreground">No runs yet. Ask something to start one.</p>;
   }
 
   return (
-    <ul className="space-y-1">
+    <ul className="divide-y border-y">
       {runs.slice(0, limit).map((run) => (
         <li key={run.id}>
           <Link
             href={`/runs/${run.id}`}
             className={cn(
-              "block rounded-lg px-3 py-2 transition-colors hover:bg-muted",
+              "block px-2 py-2.5 transition-colors hover:bg-muted/60",
               run.id === activeId && "bg-muted",
             )}
           >
-            <p className={cn("truncate", compact ? "text-[13px]" : "text-sm")}>{run.question}</p>
+            <p className={cn("truncate", compact ? "text-[12px]" : "text-[13px]")}>{run.question}</p>
             <div className="mt-0.5 flex items-center gap-3">
               <StatusBadge status={run.status} />
-              <span className="text-xs text-muted-foreground">{timeAgo(run.created_at)}</span>
+              <span className="text-[11px] text-muted-foreground tabular">{timeAgo(run.created_at)}</span>
             </div>
           </Link>
         </li>

@@ -10,11 +10,11 @@ export function ToolCallRow({ call }: { call: ToolCall }) {
   const running = call.ok === undefined;
 
   return (
-    <Collapsible className="rounded-md border bg-background">
+    <Collapsible className="rounded-[4px] border bg-background">
       <CollapsibleTrigger className="group/tool flex w-full items-center gap-2 px-2.5 py-1.5 text-left">
         <ChevronRight className="size-3 text-muted-foreground transition-transform group-data-[panel-open]/tool:rotate-90" />
-        <span className="font-mono text-xs">{call.tool}</span>
-        <span className="ml-auto flex items-center gap-2 text-xs text-muted-foreground tabular">
+        <span className="text-[11.5px]">{call.tool}</span>
+        <span className="ml-auto flex items-center gap-2 text-[11px] text-muted-foreground tabular">
           {call.doneAt && duration(call.at, call.doneAt)}
           {running && <Loader2 className="size-3.5 animate-spin" />}
           {call.ok === true && <Check className="size-3.5 text-live" />}
@@ -24,12 +24,12 @@ export function ToolCallRow({ call }: { call: ToolCall }) {
       <CollapsibleContent>
         <div className="space-y-2 border-t px-2.5 py-2">
           <div>
-            <p className="mb-1 text-[11px] text-muted-foreground uppercase">Input</p>
+            <p className="mb-1 text-[10px] tracking-[0.12em] text-muted-foreground uppercase">Input</p>
             <JsonBlock value={call.input} />
           </div>
           {!running && (
             <div>
-              <p className="mb-1 text-[11px] text-muted-foreground uppercase">Output</p>
+              <p className="mb-1 text-[10px] tracking-[0.12em] text-muted-foreground uppercase">Output</p>
               <JsonBlock value={call.output} />
             </div>
           )}

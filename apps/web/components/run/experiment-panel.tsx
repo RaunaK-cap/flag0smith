@@ -1,8 +1,7 @@
 "use client";
 
 import { Activity, GitPullRequest } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Panel } from "@/components/frame";
 import { cn } from "@/lib/utils";
 import { clock, percent } from "@/lib/format";
 import type { RunView } from "@/lib/run-view";
@@ -12,7 +11,7 @@ export function ExperimentPanel({ view }: { view: RunView }) {
   const variants = orderVariants(Object.keys(view.traffic));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <TrafficCard view={view} variants={variants} />
       <ResultsCard view={view} />
       <PullRequestsCard view={view} />
@@ -31,18 +30,15 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card size="sm" className="gap-3">
-      <CardHeader>
-        <CardTitle className="text-[13px] font-medium">{title}</CardTitle>
-        {description && <CardDescription className="text-xs">{description}</CardDescription>}
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
+    <Panel title={title}>
+      {description && <p className="mb-3 text-[11px] text-muted-foreground">{description}</p>}
+      {children}
+    </Panel>
   );
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="text-xs text-muted-foreground">{children}</p>;
+  return <p className="hatch border p-3 text-[11px] text-muted-foreground">{children}</p>;
 }
 
 // Live counts from the traffic simulator: instant, smooth, ours.
@@ -54,7 +50,7 @@ function TrafficCard({ view, variants }: { view: RunView; variants: string[] }) 
       ) : (
         <div className="space-y-3">
           <TrafficChart series={view.trafficSeries} variants={variants} />
-          <table className="w-full text-xs tabular">
+          <table className="w-full text-[11.5px] tabular">
             <thead className="text-muted-foreground">
               <tr className="text-left">
                 <th className="font-normal">Variant</th>
@@ -71,7 +67,7 @@ function TrafficCard({ view, variants }: { view: RunView; variants: string[] }) 
                   <tr key={variant} className="border-t">
                     <td className="py-1.5">
                       <span className="flex items-center gap-1.5">
-                        <span className="size-2 rounded-full" style={{ background: variantColor(variant, index - 1) }} />
+                        <span className="size-2" style={{ background: variantColor(variant, index - 1) }} />
                         {variant}
                       </span>
                     </td>
@@ -112,7 +108,7 @@ function ResultsCard({ view }: { view: RunView }) {
                   <span className="font-medium">{variant.key}</span>
                   <span
                     className={cn(
-                      "text-xs tabular",
+                      "text-[11px] tabular",
                       winning && "text-live",
                       losing && "text-destructive",
                     )}
@@ -121,10 +117,15 @@ function ResultsCard({ view }: { view: RunView }) {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Progress value={chance} className="h-1.5 flex-1" />
-                  <span className="w-12 text-right text-xs tabular">{percent(chance, 0)}</span>
+                  <div className="h-1.5 flex-1 bg-muted">
+                    <div
+                      className={cn("h-full transition-[width] duration-700", winning ? "bg-live" : "bg-foreground/70")}
+                      style={{ width: `${chance}%` }}
+                    />
+                  </div>
+                  <span className="w-12 text-right text-[11px] tabular">{percent(chance, 0)}</span>
                 </div>
-                <p className="text-xs text-muted-foreground tabular">
+                <p className="text-[11px] text-muted-foreground tabular">
                   Chance to beat control · lift {percent(variant.delta)}
                   {variant.credibleInterval &&
                     ` · 95% CI ${percent(variant.credibleInterval[0])} to ${percent(variant.credibleInterval[1])}`}
@@ -149,11 +150,11 @@ function PullRequestsCard({ view }: { view: RunView }) {
               href={pr.url}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2 rounded-md px-1 py-0.5 hover:bg-muted"
+              className="flex items-center gap-2 px-1 py-1 hover:bg-muted"
             >
               <GitPullRequest className="size-3.5 text-live" />
               <span className="truncate text-[13px]">{pr.title}</span>
-              <span className="ml-auto text-xs text-muted-foreground">#{pr.number}</span>
+              <span className="ml-auto text-[11px] text-muted-foreground">#{pr.number}</span>
             </a>
           </li>
         ))}
@@ -170,7 +171,7 @@ function ChangesCard({ view }: { view: RunView }) {
       ) : (
         <ol className="space-y-2">
           {[...view.changes].reverse().map((change, index) => (
-            <li key={index} className="flex gap-2 text-xs">
+            <li key={index} className="flex gap-2 text-[11px]">
               <Activity className="mt-0.5 size-3 shrink-0 text-muted-foreground" />
               <span className="flex-1">{change.summary}</span>
               <span className="text-muted-foreground tabular">{clock(change.at)}</span>

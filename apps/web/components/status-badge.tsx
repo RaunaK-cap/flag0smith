@@ -11,8 +11,8 @@ const styles: Record<string, { label: string; dot: string }> = {
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
   const style = styles[status] ?? { label: status, dot: "bg-muted-foreground" };
   return (
-    <span className={cn("inline-flex items-center gap-1.5 text-xs text-muted-foreground", className)}>
-      <span className={cn("size-1.5 rounded-full", style.dot)} />
+    <span className={cn("inline-flex items-center gap-1.5 text-[11px] text-muted-foreground", className)}>
+      <span className={cn("size-1.5", style.dot)} />
       {style.label}
     </span>
   );

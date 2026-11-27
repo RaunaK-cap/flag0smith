@@ -9,6 +9,7 @@ import { humanize } from "@/lib/format";
 import type { Approval } from "@/lib/run-view";
 import { agentMeta } from "./agent-meta";
 import { JsonBlock } from "./json-block";
+import { CornerMarks, Eyebrow } from "@/components/frame";
 
 // Shown whenever the agent wants to change something. Nothing happens until a human answers.
 export function ApprovalCard({ runId, approval }: { runId: string; approval: Approval }) {
@@ -26,14 +27,15 @@ export function ApprovalCard({ runId, approval }: { runId: string; approval: App
   }
 
   return (
-    <div className="rounded-xl border border-warn/40 bg-card p-4 shadow-lg shadow-black/5">
+    <div className="relative border border-warn/50 bg-card p-4 shadow-[0_18px_40px_-24px_rgb(0_0_0/0.4)]">
+      <CornerMarks />
       <div className="mb-2 flex items-center gap-2">
         <ShieldAlert className="size-4 text-warn" />
-        <p className="font-medium">Approval needed</p>
-        <span className="ml-auto text-xs text-muted-foreground">{agentMeta[approval.agent].label}</span>
+        <Eyebrow className="text-warn">Approval needed</Eyebrow>
+        <span className="ml-auto text-[11px] text-muted-foreground">{agentMeta[approval.agent].label}</span>
       </div>
       <p className="mb-2 text-[13px]">
-        The agent wants to run <span className="font-mono text-xs">{humanize(approval.tool).toLowerCase()}</span>{" "}
+        The agent wants to run <span className="bg-muted px-1">{humanize(approval.tool).toLowerCase()}</span>{" "}
         with:
       </p>
       <JsonBlock value={approval.input} />

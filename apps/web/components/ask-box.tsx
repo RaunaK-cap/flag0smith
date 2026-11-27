@@ -36,7 +36,7 @@ export function AskBox() {
   return (
     <div className="space-y-3">
       <form
-        className="relative rounded-xl border bg-card shadow-xs focus-within:ring-2 focus-within:ring-ring/30"
+        className="relative rounded-[8px] border border-line-2 bg-card shadow-[0_18px_40px_-28px_rgb(0_0_0/0.35)] focus-within:border-foreground/40"
         onSubmit={(event) => {
           event.preventDefault();
           submit(question);
@@ -52,10 +52,10 @@ export function AskBox() {
             }
           }}
           placeholder="Ask a product question, e.g. will a shorter signup form get more signups?"
-          className="min-h-24 resize-none border-0 bg-transparent px-4 pt-3 pb-12 shadow-none focus-visible:ring-0 dark:bg-transparent"
+          className="min-h-24 resize-none border-0 bg-transparent px-4 pt-3.5 pb-12 text-[13px] shadow-none focus-visible:ring-0 md:text-[13px] dark:bg-transparent"
         />
         <div className="absolute right-2 bottom-2 left-4 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Enter to send · Shift+Enter for a new line</span>
+          <span className="text-[10.5px] text-muted-foreground">↵ send · ⇧↵ new line</span>
           <Button type="submit" size="icon-sm" disabled={!question.trim() || sending} aria-label="Start run">
             <ArrowUp />
           </Button>
@@ -69,7 +69,7 @@ export function AskBox() {
             type="button"
             disabled={sending}
             onClick={() => submit(text)}
-            className="rounded-full border px-3 py-1 text-left text-xs text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+            className="rounded-[4px] border bg-card px-2.5 py-1 text-left text-[11px] text-muted-foreground transition-colors hover:border-line-2 hover:text-foreground"
           >
             {text}
           </button>

@@ -32,11 +32,11 @@ function AgentStepItem({ step, active }: { step: AgentStep; active: boolean }) {
   const isSubAgent = Boolean(step.parent);
 
   return (
-    <li className={cn("relative", isSubAgent && "ml-3 border-l pl-4 sm:ml-4 sm:pl-5")}>
+    <li className={cn("relative", isSubAgent && "ml-3 border-l border-dashed border-line-2 pl-4 sm:ml-4 sm:pl-5")}>
       <div className="flex items-start gap-2.5">
         <span
           className={cn(
-            "mt-0.5 grid size-6 shrink-0 place-items-center rounded-md border bg-card",
+            "mt-0.5 grid size-6 shrink-0 place-items-center rounded-[4px] border bg-card",
             active && "border-live/50 text-live",
           )}
         >
@@ -46,12 +46,12 @@ function AgentStepItem({ step, active }: { step: AgentStep; active: boolean }) {
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-baseline gap-x-2">
             <span className="font-medium">{meta.label}</span>
-            <span className="text-xs text-muted-foreground">{meta.role}</span>
-            <span className="ml-auto text-xs text-muted-foreground tabular">{clock(step.at)}</span>
+            <span className="text-[11px] text-muted-foreground">{meta.role}</span>
+            <span className="ml-auto text-[11px] text-muted-foreground tabular">{clock(step.at)}</span>
           </div>
 
           {step.task && isSubAgent && (
-            <p className="rounded-md bg-muted/50 px-2.5 py-1.5 text-xs text-muted-foreground">{step.task}</p>
+            <p className="border-l-2 border-line-2 bg-muted/40 px-2.5 py-1.5 text-[11.5px] text-muted-foreground">{step.task}</p>
           )}
 
           {step.text && <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{step.text}</p>}
@@ -65,7 +65,7 @@ function AgentStepItem({ step, active }: { step: AgentStep; active: boolean }) {
           )}
 
           {active && !step.text && step.tools.length === 0 && (
-            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+            <p className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <Loader2 className="size-3 animate-spin" /> Thinking…
             </p>
           )}

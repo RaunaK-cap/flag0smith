@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Eyebrow, Section, Title } from "@/components/frame";
 import { clearConnection, readConnection, saveConnection, type Connection } from "@/lib/connection";
 
 const empty: Connection = {
@@ -82,13 +83,17 @@ export default function ConnectPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-xl px-4 py-10">
-      <h1 className="mb-1 text-lg font-medium">Connect your project</h1>
-      <p className="mb-6 text-muted-foreground">
-        Use FlagPilot on your own Flagsmith project and GitHub repo instead of the demo.
-      </p>
+    <div className="flex flex-1 flex-col">
+      <Section width="max-w-3xl" className="px-4 pt-12 pb-8 sm:px-10">
+        <Eyebrow className="mb-4">Connect</Eyebrow>
+        <Title lead="Your project." rest="Your Flagsmith, your repo." />
+        <p className="mt-3 max-w-lg text-muted-foreground">
+          Use FlagPilot on your own Flagsmith project and GitHub repo instead of the demo.
+        </p>
+      </Section>
 
-      <div className="mb-6 flex gap-2.5 rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
+      <Section width="max-w-3xl" className="px-4 py-8 sm:px-10">
+      <div className="mb-8 flex gap-2.5 border bg-card p-3 text-[11.5px] text-muted-foreground">
         <ShieldCheck className="size-4 shrink-0 text-live" />
         <p>
           Keys stay in this browser tab only (session storage) and are sent with each run. The server uses them
@@ -110,6 +115,8 @@ export default function ConnectPage() {
           <Button type="submit">{connected ? "Save" : "Connect"}</Button>
         </div>
       </form>
+      </Section>
+      <div className="flex-1" />
     </div>
   );
 }
@@ -127,10 +134,12 @@ function FieldGroup({
 }) {
   return (
     <fieldset className="space-y-4">
-      <legend className="mb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">{title}</legend>
+      <legend className="mb-4">
+        <Eyebrow>{title}</Eyebrow>
+      </legend>
       {fields.map((field) => (
         <div key={field.key} className="grid gap-1.5">
-          <Label htmlFor={field.key} className="text-[13px]">
+          <Label htmlFor={field.key} className="text-[12px]">
             {field.label}
           </Label>
           <Input
@@ -140,7 +149,7 @@ function FieldGroup({
             value={field.number ? (form[field.key] || "") : String(form[field.key] ?? "")}
             onChange={(event) => onChange(field, event.target.value)}
           />
-          <p className="text-xs text-muted-foreground">{field.hint}</p>
+          <p className="text-[11px] text-muted-foreground">{field.hint}</p>
         </div>
       ))}
     </fieldset>
