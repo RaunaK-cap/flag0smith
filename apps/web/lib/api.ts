@@ -3,7 +3,11 @@
 import type { StoredEvent } from "@flagpilot/shared";
 import { readConnection } from "./connection";
 
-export const AGENT_URL = process.env.NEXT_PUBLIC_AGENT_URL ?? "http://localhost:4000";
+// Locally the backend runs on port 4000 of the same machine as the dashboard.
+// Using the page's own hostname (not "localhost") means it also works from a phone on the same Wi-Fi.
+export const AGENT_URL =
+  process.env.NEXT_PUBLIC_AGENT_URL ||
+  (typeof window === "undefined" ? "http://localhost:4000" : `http://${window.location.hostname}:4000`);
 
 export type RunSummary = {
   id: string;

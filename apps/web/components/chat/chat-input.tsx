@@ -58,7 +58,7 @@ export function ChatInput({
         }}
         placeholder={rotating ? undefined : placeholder}
         aria-label="Message"
-        className={`max-h-48 ${rotating ? "min-h-24" : "min-h-20"} resize-none border-0 bg-transparent px-3.5 pt-3 pb-10 text-[13px] shadow-none focus-visible:ring-0 md:text-[13px] dark:bg-transparent`}
+        className={`max-h-48 ${rotating ? "min-h-28 sm:min-h-24" : "min-h-20"} resize-none border-0 bg-transparent px-3.5 pt-3 pb-10 text-[13px] shadow-none focus-visible:ring-0 md:text-[13px] dark:bg-transparent`}
       />
       {rotating && !text && <RotatingPlaceholder lines={placeholder} />}
       <div className="absolute right-2 bottom-2 left-3.5 flex items-center justify-between gap-2">

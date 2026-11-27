@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FlaskConical, Flag, Layers, Menu, Plug, Plus, ScrollText, Users } from "lucide-react";
+import { FlaskConical, Flag, Layers, Menu, Plug, Plus, ScrollText, Users, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { readConnection } from "@/lib/connection";
 import { timeAgo } from "@/lib/format";
 import { useRuns } from "@/lib/use-runs";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const flagsmithLinks = [
   { href: "/flags", label: "Flags", icon: Flag },
@@ -37,21 +37,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 function MobileBar() {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-  useEffect(() => setOpen(false), [pathname]); // close after navigating
+  const close = () => setOpen(false);
 
   return (
-    <div className="flex h-11 items-center gap-2 border-b px-3 md:hidden">
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger className="grid size-8 place-items-center" aria-label="Open menu">
-          <Menu className="size-4" />
-        </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0" showCloseButton={false}>
-          <SheetTitle className="sr-only">Menu</SheetTitle>
-          <SidebarContent />
-        </SheetContent>
-      </Sheet>
-      <Logo />
+    <div className="flex h-12 shrink-0 items-center justify-between border-b bg-background/80 px-2 backdrop-blur md:hidden">
+      <div className="flex items-center gap-1">
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger className="grid size-9 place-items-center rounded-[5px] active:bg-muted" aria-label="Open menu">
+            <Menu className="size-4" />
+          </SheetTrigger>
+          <SheetContent
+            side="left"
+            showCloseButton={false}
+            className="gap-0 p-0 data-[side=left]:w-[min(18rem,85vw)]"
+          >
+            <SheetTitle className="sr-only">Menu</SheetTitle>
+            <SidebarContent
+              onNavigate={close}
+              closeButton={
+                <SheetClose className="grid size-8 place-items-center rounded-[5px] active:bg-muted" aria-label="Close menu">
+                  <X className="size-4" />
+                </SheetClose>
+              }
+            />
+          </SheetContent>
+        </Sheet>
+        <Logo />
+      </div>
+      <Link href="/" aria-label="New chat" className="grid size-9 place-items-center rounded-[5px] active:bg-muted">
+        <Plus className="size-4" />
+      </Link>
     </div>
   );
 }
@@ -68,16 +83,18 @@ function Logo() {
   );
 }
 
-function SidebarContent() {
+// onNavigate: called when a link is tapped (the mobile menu uses it to close itself).
+function SidebarContent({ onNavigate, closeButton }: { onNavigate?: () => void; closeButton?: React.ReactNode }) {
   const pathname = usePathname();
   const { runs, error } = useRuns();
   const [connected, setConnected] = useState(false);
   useEffect(() => setConnected(readConnection() !== null), [pathname]);
 
   return (
-    <div className="flex h-full w-full flex-col">
-      <div className="flex h-12 items-center border-b px-4">
+    <div className="flex h-full w-full flex-col" onClick={(event) => (event.target as HTMLElement).closest("a") && onNavigate?.()}>
+      <div className="flex h-12 items-center justify-between border-b px-4">
         <Logo />
+        {closeButton}
       </div>
 
       <div className="p-3">

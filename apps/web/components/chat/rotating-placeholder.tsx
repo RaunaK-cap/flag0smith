@@ -65,7 +65,7 @@ export function RotatingPlaceholder({ lines }: { lines: PlaceholderLine[] }) {
     <span
       aria-hidden
       key={`${index}-${phase}`}
-      className="pointer-events-none absolute top-3 right-3.5 left-3.5 block text-[13px] leading-normal text-muted-foreground"
+      className="pointer-events-none absolute top-3 right-3.5 bottom-11 left-3.5 block overflow-hidden text-[13px] leading-normal text-muted-foreground"
     >
       {words}
     </span>

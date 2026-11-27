@@ -38,11 +38,11 @@ export default function NewChatPage() {
       <DotField className="pointer-events-none absolute inset-0 h-full w-full text-muted-foreground/25 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_45%,transparent_30%,black_100%)]" />
 
       <div className="relative w-full max-w-2xl">
-        <Title lead="What do you want to test?" rest="FlagPilot runs it end to end." className="mb-8" />
+        <Title lead="What do you want to test?" rest="FlagPilot runs it end to end." className="mb-10 sm:mb-8" />
 
         <ChatInput placeholder={placeholders} onSend={start} />
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 hidden flex-wrap gap-2 sm:flex">
           {suggestions.map((text) => (
             <button
               key={text}
