@@ -1,6 +1,6 @@
 import { Agent } from "@openai/agents";
 import type { RunContext } from "../runs/context";
-import { config } from "../config";
+import { model } from "../llm";
 import { orchestratorTools } from "../tools";
 
 export const ORCHESTRATOR_INSTRUCTIONS = `You are FlagPilot, an AI teammate that runs product experiments end to end with Flagsmith.
@@ -29,7 +29,7 @@ Always finish with a short summary: what was done, links/ids, and the next step.
 
 export const orchestrator = new Agent<RunContext>({
   name: "orchestrator",
-  model: config.openaiModel,
+  model,
   tools: orchestratorTools,
   instructions: ORCHESTRATOR_INSTRUCTIONS,
 });

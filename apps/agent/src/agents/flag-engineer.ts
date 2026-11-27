@@ -1,11 +1,11 @@
 import { Agent } from "@openai/agents";
 import type { RunContext } from "../runs/context";
-import { config } from "../config";
+import { model } from "../llm";
 import { flagEngineerTools } from "../tools";
 
 export const flagEngineer = new Agent<RunContext>({
   name: "flag_engineer",
-  model: config.openaiModel,
+  model,
   tools: flagEngineerTools,
   instructions: `You are the Flagsmith expert. You set things up in Flagsmith exactly as asked:
 flags, multivariate variants, segments, segment overrides, metrics, experiments, rollouts and schedules.

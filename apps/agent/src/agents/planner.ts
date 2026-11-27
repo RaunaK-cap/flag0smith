@@ -1,11 +1,11 @@
 import { Agent } from "@openai/agents";
 import type { RunContext } from "../runs/context";
-import { config } from "../config";
+import { model } from "../llm";
 import { plannerTools } from "../tools";
 
 export const planner = new Agent<RunContext>({
   name: "planner",
-  model: config.openaiModel,
+  model,
   tools: plannerTools,
   instructions: `You design ONE clean A/B experiment from a product question.
 

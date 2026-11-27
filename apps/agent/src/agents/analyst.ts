@@ -1,11 +1,11 @@
 import { Agent } from "@openai/agents";
 import type { RunContext } from "../runs/context";
-import { config } from "../config";
+import { model } from "../llm";
 import { analystTools } from "../tools";
 
 export const analyst = new Agent<RunContext>({
   name: "analyst",
-  model: config.openaiModel,
+  model,
   tools: analystTools,
   instructions: `You read experiment results from Flagsmith and explain them to a busy product team.
 

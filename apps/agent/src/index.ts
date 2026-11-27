@@ -1,11 +1,12 @@
 import express from "express";
 import cors from "cors";
-import { config, checkConfig } from "./config";
+import { config } from "./config";
+import { setupLlm } from "./llm";
 import { runsRouter } from "./routes/runs";
 import { webhooksRouter } from "./routes/webhooks";
 import { flagsmithRouter } from "./routes/flagsmith";
 
-checkConfig();
+setupLlm(); // before any agent runs
 
 const app = express();
 app.use(cors());

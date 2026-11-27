@@ -1,14 +1,7 @@
 // Reads settings from environment variables (Bun loads .env automatically).
 
-function required(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing env var ${name} (see .env.example)`);
-  return value;
-}
-
 export const config = {
   port: Number(process.env.PORT ?? 4000),
-  openaiModel: process.env.OPENAI_MODEL ?? "gpt-5.1",
 
   // Demo mode settings. "Connect your own" mode passes its own values per run instead.
   demo: {
@@ -24,7 +17,3 @@ export const config = {
 
   webhookSecret: process.env.FLAGSMITH_WEBHOOK_SECRET ?? "",
 };
-
-export function checkConfig() {
-  required("OPENAI_API_KEY");
-}

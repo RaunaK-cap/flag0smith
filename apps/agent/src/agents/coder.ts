@@ -1,11 +1,11 @@
 import { Agent } from "@openai/agents";
 import type { RunContext } from "../runs/context";
-import { config } from "../config";
+import { model } from "../llm";
 import { coderTools } from "../tools";
 
 export const coder = new Agent<RunContext>({
   name: "coder",
-  model: config.openaiModel,
+  model,
   tools: coderTools,
   instructions: `You change the app's code on GitHub so an experiment can run, then open a pull request.
 

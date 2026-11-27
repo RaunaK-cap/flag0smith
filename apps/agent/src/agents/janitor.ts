@@ -1,11 +1,11 @@
 import { Agent } from "@openai/agents";
 import type { RunContext } from "../runs/context";
-import { config } from "../config";
+import { model } from "../llm";
 import { janitorTools } from "../tools";
 
 export const janitor = new Agent<RunContext>({
   name: "janitor",
-  model: config.openaiModel,
+  model,
   tools: janitorTools,
   instructions: `You keep Flagsmith tidy and finish experiments safely.
 
