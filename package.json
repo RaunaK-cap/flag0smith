@@ -1,14 +1,19 @@
 {
   "name": "flagpilot",
   "private": true,
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "dev:agent": "bun --watch apps/agent/src/index.ts",
-    "simulate": "bun apps/simulator/src/index.ts",
-    "typecheck": "tsc --noEmit -p apps/agent && tsc --noEmit -p apps/simulator"
+    "dev:agent": "tsx watch --env-file-if-exists=.env apps/agent/src/index.ts",
+    "simulate": "tsx --env-file-if-exists=.env apps/simulator/src/index.ts",
+    "typecheck": "tsc --noEmit -p apps/agent && tsc --noEmit -p apps/simulator",
+    "start:agent": "tsx --env-file-if-exists=.env apps/agent/src/index.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/node": "24",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.0"
   }
 }
