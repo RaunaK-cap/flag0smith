@@ -19,7 +19,16 @@ const empty: Connection = {
   serverKey: "",
   githubToken: "",
   githubRepo: "",
+  llmProvider: "",
+  llmKey: "",
 };
+
+const llmProviders = [
+  { value: "", label: "Use FlagPilot's (default)", hint: "" },
+  { value: "groq", label: "Groq", hint: "console.groq.com/keys (free)" },
+  { value: "gemini", label: "Google Gemini", hint: "aistudio.google.com/apikey (free)" },
+  { value: "openai", label: "OpenAI", hint: "platform.openai.com/api-keys" },
+] as const;
 
 type Field = {
   key: keyof Connection;
@@ -55,7 +64,7 @@ export default function ConnectPage() {
   useEffect(() => {
     const saved = readConnection();
     if (saved) {
-      setForm(saved);
+      setForm({ ...empty, ...saved });
       setConnected(true);
     }
   }, []);
@@ -105,6 +114,7 @@ export default function ConnectPage() {
       <form onSubmit={connect} className="space-y-8">
         <FieldGroup title="Flagsmith" fields={flagsmithFields} form={form} onChange={update} />
         <FieldGroup title="GitHub (optional)" fields={githubFields} form={form} onChange={update} />
+        <LlmFields form={form} setForm={setForm} />
 
         <div className="flex items-center justify-end gap-2">
           {connected && (
@@ -152,6 +162,61 @@ function FieldGroup({
           <p className="text-[11px] text-muted-foreground">{field.hint}</p>
         </div>
       ))}
+    </fieldset>
+  );
+}
+
+// Optional own LLM key. Without one, FlagPilot's keys are used.
+function LlmFields({
+  form,
+  setForm,
+}: {
+  form: Connection;
+  setForm: React.Dispatch<React.SetStateAction<Connection>>;
+}) {
+  const provider = llmProviders.find((p) => p.value === form.llmProvider) ?? llmProviders[0];
+  return (
+    <fieldset className="space-y-4">
+      <legend className="mb-4">
+        <Eyebrow>AI model (optional)</Eyebrow>
+      </legend>
+      <div className="grid gap-1.5">
+        <Label htmlFor="llmProvider" className="text-[12px]">
+          Provider
+        </Label>
+        <select
+          id="llmProvider"
+          value={form.llmProvider}
+          onChange={(event) =>
+            setForm((previous) => ({ ...previous, llmProvider: event.target.value as Connection["llmProvider"] }))
+          }
+          className="h-8 rounded-[5px] border border-input bg-transparent px-2 text-[13px] outline-none focus-visible:border-ring"
+        >
+          {llmProviders.map((p) => (
+            <option key={p.value} value={p.value}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+        <p className="text-[11px] text-muted-foreground">
+          Your key is tried first. If it is rate-limited, FlagPilot falls back to its own models.
+        </p>
+      </div>
+      {form.llmProvider && (
+        <div className="grid gap-1.5">
+          <Label htmlFor="llmKey" className="text-[12px]">
+            API key
+          </Label>
+          <Input
+            id="llmKey"
+            type="password"
+            autoComplete="off"
+            value={form.llmKey}
+            onChange={(event) => setForm((previous) => ({ ...previous, llmKey: event.target.value }))}
+          />
+          <p className="text-[11px] text-muted-foreground">{provider.hint}</p>
+        </div>
+      )}
     </fieldset>
   );
 }

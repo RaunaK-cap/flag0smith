@@ -10,6 +10,9 @@ export type Connection = {
   serverKey: string;
   githubToken: string;
   githubRepo: string;
+  // Optional: the user's own LLM key. Tried before FlagPilot's own keys.
+  llmProvider: "" | "groq" | "gemini" | "openai";
+  llmKey: string;
 };
 
 const KEY = "flagpilot.connection";
