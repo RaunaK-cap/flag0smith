@@ -2,6 +2,7 @@ import { Router } from "express";
 import { config } from "../config";
 import { continueRun, executeRun } from "../runs/execute";
 import type { RunTarget } from "../runs/context";
+import type { LlmKeys } from "../llm";
 import { createRun, emit, getEvents, getRun, listRuns, subscribe } from "../runs/store";
 import { resolveApproval } from "../runs/approvals";
 import { openSse } from "./sse";
@@ -83,5 +84,14 @@ function readConnectedTarget(body: any): RunTarget {
     serverKey: String(body?.serverKey ?? ""),
     githubToken: String(body?.githubToken ?? ""),
     githubRepo: String(body?.githubRepo ?? ""),
+    llmKeys: readLlmKey(body),
   };
+}
+
+// Optional: the user's own LLM key. Used for this chat only, never saved.
+function readLlmKey(body: any): LlmKeys | undefined {
+  const provider = String(body?.llmProvider ?? "");
+  const key = String(body?.llmKey ?? "").trim();
+  if (!key || !["groq", "gemini", "openai"].includes(provider)) return undefined;
+  return { [provider]: key };
 }

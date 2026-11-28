@@ -1,10 +1,11 @@
 // Runs the orchestrator agent for one run and turns everything the SDK does
 // into RunEvents for the dashboard. Also handles pausing for human approval.
 
-import { run, type AgentInputItem, type RunStreamEvent, type StreamedRunResult } from "@openai/agents";
+import { Runner, type AgentInputItem, type RunStreamEvent, type StreamedRunResult } from "@openai/agents";
 import type { AgentName, RunEvent } from "@flagpilot/shared";
 import { config } from "../config";
 import { buildAgents } from "../agents";
+import { createModelProvider } from "../llm";
 import { waitForApproval } from "./approvals";
 import { createRunContext, type RunContext, type RunTarget } from "./context";
 import { emit as storeEmit, getRun, loadHistory, saveHistory } from "./store";
@@ -41,13 +42,16 @@ export function continueRun(runId: string, text: string): string | null {
 async function executeTurn(runId: string, text: string, target: RunTarget) {
   const emit = (event: RunEvent) => storeEmit(runId, event);
   const context = createRunContext(runId, target, emit);
-  const { orchestrator } = buildAgents((agent, event) => forwardEvent(agent, event, emit));
   const input = [...(loadHistory(runId) as AgentInputItem[]), { role: "user", content: text } as AgentInputItem];
 
   emit({ type: "agent.started", agent: "orchestrator", task: text });
 
   try {
-    let result = await run(orchestrator, input, { stream: true, context, maxTurns: MAX_TURNS });
+    const modelProvider = createModelProvider(target.llmKeys); // fallback chain of LLMs for this chat
+    const runner = new Runner({ modelProvider });
+    const { orchestrator } = buildAgents((agent, event) => forwardEvent(agent, event, emit), modelProvider);
+
+    let result = await runner.run(orchestrator, input, { stream: true, context, maxTurns: MAX_TURNS });
     await consume(result, "orchestrator", emit);
 
     // If a tool needs approval, the SDK stops and lists it in `interruptions`.
@@ -72,7 +76,7 @@ async function executeTurn(runId: string, text: string, target: RunTarget) {
       }
 
       emit({ type: "run.status", status: "running" });
-      result = await run(orchestrator, result.state, { stream: true, context, maxTurns: MAX_TURNS });
+      result = await runner.run(orchestrator, result.state, { stream: true, context, maxTurns: MAX_TURNS });
       await consume(result, "orchestrator", emit);
     }
 

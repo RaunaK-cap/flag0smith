@@ -3,6 +3,7 @@
 // so the same tools work for demo mode and for "connect your own" mode.
 
 import type { RunEvent } from "@flagpilot/shared";
+import type { LlmKeys } from "../llm";
 import { FlagsmithClient } from "../clients/flagsmith";
 import { GithubClient } from "../clients/github";
 
@@ -15,6 +16,7 @@ export type RunTarget = {
   serverKey: string; // server-side SDK key, used by the traffic simulator
   githubToken: string;
   githubRepo: string; // "owner/name"
+  llmKeys?: LlmKeys; // the user's own LLM key from the Connect page (tried before ours)
 };
 
 export type RunContext = {

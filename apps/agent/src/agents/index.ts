@@ -2,7 +2,7 @@
 // Sub-agents are given to the orchestrator as tools, so it stays in charge.
 // onEvent receives every streamed event from every sub-agent, so the dashboard can show them live.
 
-import type { RunStreamEvent } from "@openai/agents";
+import type { ModelProvider, RunStreamEvent } from "@openai/agents";
 import type { AgentName } from "@flagpilot/shared";
 import { orchestrator } from "./orchestrator";
 import { planner } from "./planner";
@@ -21,12 +21,13 @@ const team = [
   { agent: janitor, description: "End experiments, roll out winners, roll back, find stale flags." },
 ];
 
-export function buildAgents(onEvent: OnEvent) {
+export function buildAgents(onEvent: OnEvent, modelProvider: ModelProvider) {
   const subAgentTools = team.map(({ agent, description }) =>
     agent.asTool({
       toolName: agent.name,
       toolDescription: description,
       onStream: ({ event }) => onEvent(agent.name as AgentName, event),
+      runConfig: { modelProvider }, // sub-agents use the same LLM fallback chain
     }),
   );
 

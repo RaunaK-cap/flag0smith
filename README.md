@@ -100,7 +100,21 @@ One **orchestrator** (the manager) reads your request and hands each step to a s
 | **Analyst** | Reads the statistics | `refresh_results`, `get_results` |
 | **Janitor** | Rollout and cleanup | `complete_experiment`, `rollout_to_percentage`, `archive_flag`, `find_stale_flags`, `get_audit_log` |
 
-Built with the OpenAI Agents SDK. The LLM is **Gemini** by default (free tier), or OpenAI if you set an OpenAI key.
+Built with the OpenAI Agents SDK.
+
+### Which AI model answers
+
+Every agent step goes down a **fallback chain** until a model answers:
+
+```
+Groq gpt-oss-120b → Groq qwen3.8-27b → Gemini 3.5 Flash-Lite → Gemini 2.5 Flash → OpenAI (if a key is set)
+   fast (<1s)          fresh limit        bigger free limits       last resort
+```
+
+- A model that is rate-limited (429), overloaded (503), sent a too-large request (413) or doesn't answer within 25s is **skipped for a minute**.
+- **The context is never lost when the model changes.** Every request carries the whole conversation (instructions, question, earlier tool calls and their results), so the next model sees everything.
+- Providers without a key are simply left out of the chain.
+- The backend log shows which model answered each step, e.g. `[llm] groq:openai/gpt-oss-120b 640ms`.
 
 ## 5. Flagsmith features used
 
@@ -176,6 +190,8 @@ How it's used:
 | **Demo** (default) | The Flagsmith project + `cloudnote-demo` repo from the backend's `.env` | Always, unless you connect your own |
 | **Your project** | The keys you enter on the dashboard's `/connect` page, stored in your browser tab only | When a judge or user wants to try it on their own Flagsmith |
 
+**AI model key:** demo mode always uses FlagPilot's own LLM keys, so judges need no key. On the Connect page a user can **optionally** add their own Groq / Gemini / OpenAI key. It is tried first, falls back to FlagPilot's models if it's rate-limited, is used for that chat only, and is never saved.
+
 The simulator (fake traffic) only runs in demo mode. Your own project gets real users.
 
 ## 9. Setup
@@ -188,8 +204,9 @@ cp .env.example .env
 
 | Variable | Where to get it |
 |---|---|
-| `GEMINI_API_KEY` | aistudio.google.com/apikey (free). Or set `OPENAI_API_KEY` instead. |
-| `MODEL` | Optional. Default `gemini-3.5-flash`. Busy models fall back to `gemini-3.5-flash-lite`, then `gemini-2.5-flash`. |
+| `GROQ_API_KEY` | console.groq.com/keys (free, fastest) |
+| `GEMINI_API_KEY` | aistudio.google.com/apikey (free, backup) |
+| `OPENAI_API_KEY` | Optional, last in the chain |
 | `FLAGSMITH_ADMIN_TOKEN` | Flagsmith → your organisation (top left) → Organisation Settings → **API Keys** |
 | `FLAGSMITH_PROJECT_ID` | The number in the URL: `app.flagsmith.com/project/`**`56699`**`/...` |
 | `FLAGSMITH_ENVIRONMENT_KEY` | The key in the URL: `.../environment/`**`3ALA2EHo...`**`/...` (client-side key) |
@@ -243,8 +260,9 @@ Other commands:
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Run stuck on "orchestrator started", no error | Gemini model busy or rate-limited (free tier) | It falls back automatically after ≤25s. To skip the busy model, set `MODEL=gemini-3.5-flash-lite`. |
-| Backend log: `[llm] gemini-3.5-flash is busy (429)` | Free-tier quota for that model is used up | Normal. The fallback model is used. Quota resets daily. |
+| Run slow on one step | A model was busy and the chain moved on (≤25s wait) | Normal. Check the backend log: `[llm] … trying …` |
+| Backend log: `[llm] groq:… is rate-limited (429)` | Free-tier limit for that model is used up for now | Normal. The next model in the chain is used. Groq free = 8K tokens/min per model. |
+| `All models are busy` | Every model in the chain is rate-limited | Wait a minute, or add another provider's key |
 | Everything hangs on a phone hotspot | Broken IPv6 on the network | The backend runs on Node (falls back to IPv4). Ethernet / normal Wi-Fi is fine. |
 | Dashboard on a phone: buttons do nothing | Next.js dev server blocks other addresses | Already allowed in `next.config.ts` for `10.*`, `192.168.*`, `172.*`. Restart the dev server after config changes. |
 | Sidebar says "Backend offline" | Backend not running | `bun run dev:agent` |
